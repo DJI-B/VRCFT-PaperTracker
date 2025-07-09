@@ -1,0 +1,145 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "main" ]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: PaperTrackerPlugin.sln
+      Project_Path: PaperTrackerPlugin.csproj
+      Output_Directory: bin\Release\net7.0
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive  # 因为项目包含VRCFaceTracking子模块
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 7.0.x
+
+    # Cache NuGet packages
+    - name: Cache NuGet packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    # Restore dependencies
+    - name: Restore dependencies
+      run: dotnet restore $env:Project_Path
+
+    # Build the project
+    - name: Build
+      run: dotnet build $env:Project_Path --configuration ${{ matrix.configuration }} --no-restore
+
+    # Run tests (if any)
+    - name: Test
+      run: dotnet test $env:Project_Path --configuration ${{ matrix.configuration }} --no-build --verbosity normal
+      continue-on-error: true  # 暂时允许测试失败，因为可能还没有测试
+
+    # Create build info file
+    - name: Create build info
+      if: matrix.configuration == 'Release'
+      run: |
+        $buildInfo = @{
+          "Version" = "${{ github.ref_name }}"
+          "Commit" = "${{ github.sha }}"
+          "BuildDate" = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+          "Branch" = "${{ github.ref_name }}"
+        }
+        $buildInfo | ConvertTo-Json | Out-File -FilePath "build-info.json" -Encoding UTF8
+      shell: pwsh
+
+    # Upload build artifacts for Release builds
+    - name: Upload build artifacts
+      if: matrix.configuration == 'Release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: PaperTrackerPlugin-${{ github.sha }}
+        path: |
+          ${{ env.Output_Directory }}/VRCFaceTracking.PaperTracker.dll
+          ${{ env.Output_Directory }}/VRCFaceTracking.PaperTracker.pdb
+          ${{ env.Output_Directory }}/UnifiedTrackerConfig.json
+          build-info.json
+        retention-days: 90
+
+    # Upload to release (only on release tags)
+    - name: Upload to Release
+      if: github.event_name == 'release' && matrix.configuration == 'Release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ env.Output_Directory }}/VRCFaceTracking.PaperTracker.dll
+        asset_name: VRCFaceTracking.PaperTracker.dll
+        asset_content_type: application/octet-stream
+
+  # 代码质量检查作业
+  code-quality:
+    runs-on: windows-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 7.0.x
+
+    # 代码格式检查
+    - name: Format check
+      run: dotnet format --verify-no-changes --verbosity diagnostic
+      continue-on-error: true
+
+    # 安全扫描
+    - name: Security scan
+      run: |
+        dotnet list package --vulnerable --include-transitive
+        dotnet list package --deprecated
+      continue-on-error: true
+
+
+  # 通知作业（可选）
+  notify:
+    runs-on: windows-latest
+    needs: [build, code-quality]
+    if: always()
+    
+    steps:
+    - name: Notify build status
+      run: |
+        $buildStatus = "${{ needs.build.result }}"
+        $qualityStatus = "${{ needs.code-quality.result }}"
+        
+        Write-Host "Build Status: $buildStatus"
+        Write-Host "Code Quality Status: $qualityStatus"
+        
+        if ($buildStatus -eq "failure" -or $qualityStatus -eq "failure") {
+          Write-Host "::error::Build or quality check failed"
+          exit 1
+        }
+      shell: pwsh
