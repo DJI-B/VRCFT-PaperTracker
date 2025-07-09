@@ -11,8 +11,8 @@ public class PaperTrackerVRC : ExtTrackingModule
 
     public override (bool eyeSuccess, bool expressionSuccess) Initialize(bool eyeAvailable, bool expressionAvailable)
     {
-        Config PaperTrackerConfig = PaperTrackerConfig.GetPaperTrackerConfig();
-        PaperTrackerOSC = new PaperTrackerOSC(logger: Logger, PaperTrackerConfig.Host, PaperTrackerConfig.Port);
+        Config papertracker_config = PaperTrackerConfig.GetPaperTrackerConfig();
+        PaperTrackerOSC = new PaperTrackerOSC(logger: Logger, papertracker_config.Host, papertracker_config.Port);
         List<Stream> list = new List<Stream>();
         Assembly executingAssembly = Assembly.GetExecutingAssembly();
         Stream manifestResourceStream = executingAssembly.GetManifestResourceStream("VRCFaceTracking.PaperTracker.PaperTrackerLogo.png")!;
