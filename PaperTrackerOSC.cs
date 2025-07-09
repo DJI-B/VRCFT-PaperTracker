@@ -42,7 +42,7 @@ public class PaperTrackerOSC
     private void ConfigureReceiver()
     {
         IPAddress address = IPAddress.Parse(_resolvedHost);
-        IPEndPoint localEP = new IPEndPoint(address, _resolvedPort);
+        IPEndPoint localEP = new(address, _resolvedPort);
         _receiver = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         _receiver.Bind(localEP);
         _receiver.ReceiveTimeout = TIMEOUT_MS;
@@ -63,7 +63,7 @@ public class PaperTrackerOSC
 
                     try
                     {
-                        OscMessage oscMessage = new OscMessage(buffer, len, ref messageIndex);
+                        OscMessage oscMessage = new(buffer, len, ref messageIndex);
                         ProcessMessage(oscMessage);
                     }
                     catch (Exception ex)

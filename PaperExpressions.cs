@@ -5,7 +5,7 @@ namespace VRCFaceTracking.PaperTracker;
 
 public static class PaperTrackerExpressions
 {
-    public static readonly TwoKeyDictionary<UnifiedExpressions, string, float> PaperTrackerExpressionMap = new TwoKeyDictionary<UnifiedExpressions, string, float>
+    public static readonly TwoKeyDictionary<UnifiedExpressions, string, float> PaperTrackerExpressionMap = new()
     {
         {
             UnifiedExpressions.CheekPuffLeft,
