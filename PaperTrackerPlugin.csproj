@@ -24,6 +24,21 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>AnyCPU;x64</Platforms>
+    <AssemblyName>VRCFaceTracking.PaperTracker</AssemblyName>
+    <RootNamespace>VRCFaceTracking.PaperTracker</RootNamespace>
   </PropertyGroup>
+
+  <!-- 新增的文件夹结构 -->
+  <ItemGroup>
+    <Folder Include="Configuration\" />
+    <Folder Include="Core\Models\" />
+    <Folder Include="Core\OSC\" />
+    <Folder Include="Core\Filters\" />
+    <Folder Include="Tracking\Eye\" />
+    <Folder Include="Tracking\Eye\Mappers\" />
+    <Folder Include="Tracking\Face\" />
+    <Folder Include="Utils\" />
+    <Folder Include="Collections\" />
+  </ItemGroup>
 
 </Project>
