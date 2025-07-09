@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaperTrackerPlugin", "PaperTrackerPlugin.csproj", "{B8CEED60-EB28-4487-8EF5-975F6FEE3E85}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRCFaceTracking.Core", "VRCFaceTracking\VRCFaceTracking.Core\VRCFaceTracking.Core.csproj", "{5F39671C-DD7F-AAE5-B74B-813D8668475F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRCFaceTracking.SDK", "VRCFaceTracking\VRCFaceTracking.SDK\VRCFaceTracking.SDK.csproj", "{3412EEE0-A5BB-0C9E-D839-8F3C1E1CDEE4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
