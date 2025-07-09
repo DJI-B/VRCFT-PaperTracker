@@ -1,6 +1,5 @@
 using System.Net;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using VRCFaceTracking.PaperTracker.Utils;
 
 namespace VRCFaceTracking.PaperTracker.Configuration;
@@ -9,14 +8,14 @@ namespace VRCFaceTracking.PaperTracker.Configuration;
 public struct UnifiedConfig
 {
     // 眼部追踪配置
-    [JsonInclude] public EyeTrackingConfig EyeTracking { get; set; }
+    [JsonProperty] public EyeTrackingConfig EyeTracking { get; set; }
     
     // 面部追踪配置
-    [JsonInclude] public FaceTrackingConfig FaceTracking { get; set; }
+    [JsonProperty] public FaceTrackingConfig FaceTracking { get; set; }
     
     // 通用配置
-    [JsonInclude] public bool EnableEyeTracking { get; set; }
-    [JsonInclude] public bool EnableFaceTracking { get; set; }
+    [JsonProperty] public bool EnableEyeTracking { get; set; }
+    [JsonProperty] public bool EnableFaceTracking { get; set; }
     
     public static UnifiedConfig Default => new()
     {
@@ -30,12 +29,12 @@ public struct UnifiedConfig
 // 眼部追踪配置 (从ETVR移植)
 public struct EyeTrackingConfig
 {
-    [JsonConverter(typeof(IPAddressJsonConverter))]
-    [JsonInclude] public IPAddress ListeningAddress { get; set; }
-    [JsonInclude] public ushort PortNumber { get; set; }
-    [JsonInclude] public bool ShouldEmulateEyeWiden { get; set; }
-    [JsonInclude] public bool ShouldEmulateEyeSquint { get; set; }
-    [JsonInclude] public bool ShouldEmulateEyebrows { get; set; }
+    [JsonConverter(typeof(IPAddressNewtonsoftConverter))]
+    [JsonProperty] public IPAddress ListeningAddress { get; set; }
+    [JsonProperty] public ushort PortNumber { get; set; }
+    [JsonProperty] public bool ShouldEmulateEyeWiden { get; set; }
+    [JsonProperty] public bool ShouldEmulateEyeSquint { get; set; }
+    [JsonProperty] public bool ShouldEmulateEyebrows { get; set; }
     
     [JsonIgnore] private float[] _squeezeThresholdV1;
     [JsonIgnore] private float[] _widenThresholdV1;
@@ -43,43 +42,43 @@ public struct EyeTrackingConfig
     [JsonIgnore] private float[] _widenThresholdV2;
     [JsonIgnore] private float _outputMultiplier;
     
-    [JsonInclude]
+    [JsonProperty]
     public float[] SqueezeThresholdV1
     {
         get => _squeezeThresholdV1;
         set => _squeezeThresholdV1 = new[] { Math.Clamp(value[0], 0f, 1f), Math.Clamp(value[1], 0f, 2f) };
     }
     
-    [JsonInclude]
+    [JsonProperty]
     public float[] WidenThresholdV1
     {
         get => _widenThresholdV1;
         set => _widenThresholdV1 = new[] { Math.Clamp(value[0], 0f, 1f), Math.Clamp(value[1], 0f, 2f) };
     }
     
-    [JsonInclude]
+    [JsonProperty]
     public float[] SqueezeThresholdV2
     {
         get => _squeezeThresholdV2;
         set => _squeezeThresholdV2 = new[] { Math.Clamp(value[0], 0f, 1f), Math.Clamp(value[1], -2f, 0f) };
     }
     
-    [JsonInclude]
+    [JsonProperty]
     public float[] WidenThresholdV2
     {
         get => _widenThresholdV2;
         set => _widenThresholdV2 = new[] { Math.Clamp(value[0], 0f, 1f), Math.Clamp(value[1], 0f, 2f) };
     }
     
-    [JsonInclude]
+    [JsonProperty]
     public float OutputMultiplier
     {
         get => _outputMultiplier;
         set => _outputMultiplier = Math.Clamp(value, 0f, 2f);
     }
     
-    [JsonInclude] public float EyebrowThresholdRising { get; set; }
-    [JsonInclude] public float EyebrowThresholdLowering { get; set; }
+    [JsonProperty] public float EyebrowThresholdRising { get; set; }
+    [JsonProperty] public float EyebrowThresholdLowering { get; set; }
     
     public static EyeTrackingConfig Default => new()
     {
@@ -101,8 +100,8 @@ public struct EyeTrackingConfig
 // 面部追踪配置 (从PaperTracker移植)
 public struct FaceTrackingConfig
 {
-    [JsonInclude] public string FaceHost { get; set; }
-    [JsonInclude] public int FacePort { get; set; }
+    [JsonProperty] public string FaceHost { get; set; }
+    [JsonProperty] public int FacePort { get; set; }
     
     public static FaceTrackingConfig Default => new()
     {

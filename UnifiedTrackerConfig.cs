@@ -21,7 +21,7 @@ public class UnifiedTrackingModule : ExtTrackingModule
     public override (bool eyeSuccess, bool expressionSuccess) Initialize(bool eyeAvailable, bool expressionAvailable)
     {
         // 设置模块信息
-        ModuleInformation.Name = "Unified PaperTracker + ETVR Module v1.0.0";
+        ModuleInformation.Name = "PaperTracker Module";
         
         // 加载模块图标
         try

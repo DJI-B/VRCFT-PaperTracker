@@ -1,4 +1,4 @@
-using System.Text.Json;
+using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using VRCFaceTracking.PaperTracker.Core.Models;
 
@@ -67,7 +67,7 @@ public class UnifiedConfigManager
         var jsonData = File.ReadAllText(_configFilePath);
         try
         {
-            _config = JsonSerializer.Deserialize<UnifiedConfig>(jsonData);
+            _config = JsonConvert.DeserializeObject<UnifiedConfig>(jsonData);
             NotifyListeners();
         }
         catch (JsonException ex)
@@ -81,11 +81,7 @@ public class UnifiedConfigManager
     public void SaveConfig()
     {
         _logger.LogInformation($"Saving config at {_configFilePath}");
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
-        var jsonData = JsonSerializer.Serialize(_config, options);
+        var jsonData = JsonConvert.SerializeObject(_config, Formatting.Indented);
         File.WriteAllText(_configFilePath, jsonData);
     }
     
@@ -187,7 +183,7 @@ public class UnifiedConfigManager
             try
             {
                 var paperConfigJson = File.ReadAllText(paperConfigPath);
-                var paperConfig = JsonSerializer.Deserialize<FaceTrackingConfig>(paperConfigJson);
+                var paperConfig = JsonConvert.DeserializeObject<FaceTrackingConfig>(paperConfigJson);
                 _config.FaceTracking = paperConfig;
                 _logger.LogInformation("Migrated PaperTracker configuration");
                 migrated = true;
@@ -205,7 +201,7 @@ public class UnifiedConfigManager
             try
             {
                 var etvrConfigJson = File.ReadAllText(etvrConfigPath);
-                var etvrConfig = JsonSerializer.Deserialize<EyeTrackingConfig>(etvrConfigJson);
+                var etvrConfig = JsonConvert.DeserializeObject<EyeTrackingConfig>(etvrConfigJson);
                 _config.EyeTracking = etvrConfig;
                 _logger.LogInformation("Migrated ETVR configuration");
                 migrated = true;
