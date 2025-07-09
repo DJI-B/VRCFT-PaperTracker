@@ -16,12 +16,8 @@ namespace VRCFaceTracking.PaperTracker.Collections;
 /// <typeparam name="TValue"></typeparam>
 public class TwoKeyDictionary<TKey1, TKey2, TValue> : IEnumerable
 {
-#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
     private readonly Dictionary<TKey1, TKey2> m_dic1 = new();
-#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
-#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
     private readonly Dictionary<TKey2, TValue> m_dic2 = new();
-#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
     private IEnumerator<TKey1> m_cachedEnumerator = null!;
 
     /// <summary>

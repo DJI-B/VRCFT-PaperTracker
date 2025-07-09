@@ -5,14 +5,14 @@ namespace VRCFaceTracking.PaperTracker;
 
 public class PaperTrackerVRC : ExtTrackingModule
 {
-    private PaperTrackerOSC? papertracker_osc;
+    private PaperFaceTrackerOSC? paper_face_tracker_osc;
 
     public override (bool SupportsEye, bool SupportsExpression) Supported => (false, true);
 
     public override (bool eyeSuccess, bool expressionSuccess) Initialize(bool eyeAvailable, bool expressionAvailable)
     {
         Config papertracker_config = PaperTrackerConfig.GetPaperTrackerConfig();
-        papertracker_osc = new PaperTrackerOSC(logger: Logger, papertracker_config.Host, papertracker_config.Port);
+        paper_face_tracker_osc = new PaperFaceTrackerOSC(logger: Logger, papertracker_config.FaceHost, papertracker_config.FacePort);
         List<Stream> list = new();
         Assembly executingAssembly = Assembly.GetExecutingAssembly();
         Stream manifestResourceStream = executingAssembly.GetManifestResourceStream("VRCFaceTracking.PaperTracker.PaperTrackerLogo.png")!;
@@ -27,7 +27,7 @@ public class PaperTrackerVRC : ExtTrackingModule
     
     public override void Teardown()
     {
-        papertracker_osc?.Teardown();
+        paper_face_tracker_osc?.Teardown();
     }
 
     public override void Update()

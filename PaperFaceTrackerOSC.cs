@@ -5,7 +5,7 @@ using VRCFaceTracking.Core.OSC;
 
 namespace VRCFaceTracking.PaperTracker;
 
-public class PaperTrackerOSC
+public class PaperFaceTrackerOSC
 {
     private Socket? _receiver;
     private bool _loop = true;
@@ -18,7 +18,7 @@ public class PaperTrackerOSC
     public const int DEFAULT_PORT = 8888;
     private const int TIMEOUT_MS = 10000;
 
-    public PaperTrackerOSC(ILogger logger, string? host = null, int? port = null)
+    public PaperFaceTrackerOSC(ILogger logger, string? host = null, int? port = null)
     {
         _logger = logger;
 
