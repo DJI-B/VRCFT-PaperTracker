@@ -1,0 +1,16 @@
+{
+  "InstallationState": 0,
+  "ModuleId": "9058ac35-c6be-4e8b-8e3b-a16b00aa5488",
+  "LastUpdated": "2025-07-09T19:48:18Z",
+  "Version": "0.0.1",
+  "Downloads": 3083,
+  "Ratings": 21,
+  "Rating": 4.428571,
+  "AuthorName": "DJI-B",
+  "ModuleName": "PaperTracker Module",
+  "ModuleDescription": "The module translates the eye and face tracking data from PaperTracker to VRCFT and vice versa",
+  "UsageInstructions": "Follow instructions on https://github.com/DJI-B/VRCFT-PaperTracker.",
+  "DownloadUrl": "https://github.com/DJI-B/VRCFT-PaperTracker/releases/download/0.0.1/VRCFT-PaperTracker.dll",
+  "ModulePageUrl": "https://github.com/DJI-B/VRCFT-PaperTracker",
+  "DllFileName": "VRCFaceTracking.PaperTracker.dll"
+}

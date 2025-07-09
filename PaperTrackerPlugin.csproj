@@ -38,7 +38,6 @@
     <Folder Include="Tracking\Eye\Mappers\" />
     <Folder Include="Tracking\Face\" />
     <Folder Include="Utils\" />
-    <Folder Include="Collections\" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,22 @@
+{
+  "EyeTracking": {
+    "ListeningAddress": "127.0.0.1",
+    "PortNumber": 8889,
+    "ShouldEmulateEyeWiden": true,
+    "ShouldEmulateEyeSquint": true,
+    "ShouldEmulateEyebrows": true,
+    "SqueezeThresholdV1": [0.06, 0.45],
+    "WidenThresholdV1": [0.62, 1.0],
+    "SqueezeThresholdV2": [0.06, -0.9],
+    "WidenThresholdV2": [0.62, 1.08],
+    "OutputMultiplier": 1.1,
+    "EyebrowThresholdRising": 0.78,
+    "EyebrowThresholdLowering": 0.18
+  },
+  "FaceTracking": {
+    "FaceHost": "127.0.0.1",
+    "FacePort": 8888
+  },
+  "EnableEyeTracking": true,
+  "EnableFaceTracking": true
+}
