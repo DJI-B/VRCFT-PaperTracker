@@ -15,6 +15,7 @@ public class FaceTrackingManager : IDisposable
     
     // 使用现有的PaperTracker表情映射
     private readonly TwoKeyDictionary<UnifiedExpressions, string, float> _expressionMap;
+    private bool _disposed = false;
     
     public FaceTrackingManager(ILogger logger, FaceTrackingConfig config)
     {
@@ -27,21 +28,31 @@ public class FaceTrackingManager : IDisposable
     
     public void UpdateConfig(FaceTrackingConfig config)
     {
+        if (_disposed) return;
         _config = config;
     }
     
     public void ProcessMessage(OSCMessage message)
     {
-        if (!message.success) return;
+        if (!message.success || _disposed) return;
         
-        if (message.value is OSCFloat oscFloat)
+        try
         {
-            ProcessExpressionMessage(message.address, oscFloat.value);
+            if (message.value is OSCFloat oscFloat)
+            {
+                ProcessExpressionMessage(message.address, oscFloat.value);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing OSC message in face tracking manager");
         }
     }
     
     private void ProcessExpressionMessage(string address, float value)
     {
+        if (_disposed) return;
+        
         // 处理特殊的表情映射
         switch (address)
         {
@@ -64,16 +75,35 @@ public class FaceTrackingManager : IDisposable
     
     public void UpdateExpressionData()
     {
-        // 更新VRCFT表情数据
-        foreach (UnifiedExpressions expression in _expressionMap)
+        if (_disposed) return;
+        
+        try
         {
-            UnifiedTracking.Data.Shapes[(int)expression].Weight = _expressionMap.GetByKey1(expression);
+            // 更新VRCFT表情数据
+            foreach (UnifiedExpressions expression in _expressionMap)
+            {
+                UnifiedTracking.Data.Shapes[(int)expression].Weight = _expressionMap.GetByKey1(expression);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating expression data");
         }
     }
     
     public void Dispose()
     {
-        // 清理资源
-        _expressionMap?.Clear();
+        if (_disposed) return;
+        _disposed = true;
+        
+        try
+        {
+            // 清理资源
+            _expressionMap?.Clear();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error disposing face tracking manager");
+        }
     }
 }

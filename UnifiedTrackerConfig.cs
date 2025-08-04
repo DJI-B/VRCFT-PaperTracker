@@ -15,63 +15,72 @@ public class UnifiedTrackingModule : ExtTrackingModule
     private UnifiedOSCManager? _oscManager;
     private EyeTrackingManager? _eyeTrackingManager;
     private FaceTrackingManager? _faceTrackingManager;
+    private bool _disposed = false;
     
     public override (bool SupportsEye, bool SupportsExpression) Supported => (true, true);
     
     public override (bool eyeSuccess, bool expressionSuccess) Initialize(bool eyeAvailable, bool expressionAvailable)
     {
-        // 设置模块信息
-        ModuleInformation.Name = "PaperTracker Module";
-        
-        // 加载模块图标
         try
         {
-            var logoStream = GetType().Assembly.GetManifestResourceStream("VRCFaceTracking.PaperTracker.PaperTrackerLogo.png");
-            if (logoStream != null)
+            // 设置模块信息
+            ModuleInformation.Name = "PaperTracker Module";
+            
+            // 加载模块图标
+            try
             {
-                ModuleInformation.StaticImages = new List<Stream> { logoStream };
+                var logoStream = GetType().Assembly.GetManifestResourceStream("VRCFaceTracking.PaperTracker.PaperTrackerLogo.png");
+                if (logoStream != null)
+                {
+                    ModuleInformation.StaticImages = new List<Stream> { logoStream };
+                }
             }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Failed to load module logo");
+            }
+            
+            // 获取当前路径并初始化配置管理器
+            var currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+            _configManager = new UnifiedConfigManager(currentPath, Logger);
+            
+            // 尝试迁移旧配置
+            _configManager.MigrateFromLegacyConfigs();
+            _configManager.LoadConfig();
+            
+            var config = _configManager.Config;
+            
+            bool eyeSuccess = false;
+            bool expressionSuccess = false;
+            
+            // 初始化眼部追踪
+            if (config.EnableEyeTracking && eyeAvailable)
+            {
+                eyeSuccess = InitializeEyeTracking(config.EyeTracking);
+            }
+            
+            // 初始化面部表情追踪
+            if (config.EnableFaceTracking && expressionAvailable)
+            {
+                expressionSuccess = InitializeFaceTracking(config.FaceTracking);
+            }
+            
+            // 初始化统一OSC管理器
+            if (eyeSuccess || expressionSuccess)
+            {
+                _oscManager = new UnifiedOSCManager(Logger, _eyeTrackingManager, _faceTrackingManager);
+                _oscManager.RegisterConfigManager(_configManager);
+                _oscManager.Start();
+            }
+            
+            Logger.LogInformation($"Unified module initialized - Eye: {eyeSuccess}, Expression: {expressionSuccess}");
+            return (eyeSuccess, expressionSuccess);
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Failed to load module logo");
+            Logger.LogError(ex, "Failed to initialize unified tracking module");
+            return (false, false);
         }
-        
-        // 获取当前路径并初始化配置管理器
-        var currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-        _configManager = new UnifiedConfigManager(currentPath, Logger);
-        
-        // 尝试迁移旧配置
-        _configManager.MigrateFromLegacyConfigs();
-        _configManager.LoadConfig();
-        
-        var config = _configManager.Config;
-        
-        bool eyeSuccess = false;
-        bool expressionSuccess = false;
-        
-        // 初始化眼部追踪
-        if (config.EnableEyeTracking && eyeAvailable)
-        {
-            eyeSuccess = InitializeEyeTracking(config.EyeTracking);
-        }
-        
-        // 初始化面部表情追踪
-        if (config.EnableFaceTracking && expressionAvailable)
-        {
-            expressionSuccess = InitializeFaceTracking(config.FaceTracking);
-        }
-        
-        // 初始化统一OSC管理器
-        if (eyeSuccess || expressionSuccess)
-        {
-            _oscManager = new UnifiedOSCManager(Logger, _eyeTrackingManager, _faceTrackingManager);
-            _oscManager.RegisterConfigManager(_configManager);
-            _oscManager.Start();
-        }
-        
-        Logger.LogInformation($"Unified module initialized - Eye: {eyeSuccess}, Expression: {expressionSuccess}");
-        return (eyeSuccess, expressionSuccess);
     }
     
     private bool InitializeEyeTracking(EyeTrackingConfig config)
@@ -106,6 +115,8 @@ public class UnifiedTrackingModule : ExtTrackingModule
     
     public override void Update()
     {
+        if (_disposed) return;
+        
         try
         {
             // 更新眼部追踪数据
@@ -125,11 +136,26 @@ public class UnifiedTrackingModule : ExtTrackingModule
     
     public override void Teardown()
     {
+        if (_disposed) return;
+        _disposed = true;
+        
         try
         {
-            _oscManager?.TearDown();
+            Logger.LogInformation("Starting unified module teardown");
+            
+            // 1. 首先停止OSC管理器
+            _oscManager?.Dispose();
+            _oscManager = null;
+            
+            // 2. 然后释放追踪管理器
             _eyeTrackingManager?.Dispose();
+            _eyeTrackingManager = null;
+            
             _faceTrackingManager?.Dispose();
+            _faceTrackingManager = null;
+            
+            // 3. 最后清理配置管理器
+            _configManager = null;
             
             Logger.LogInformation("Unified module teardown completed");
         }
