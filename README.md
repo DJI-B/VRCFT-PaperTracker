@@ -13,15 +13,17 @@
 
 ## 🚀 概述
 
-PaperTracker VRCFaceTracking 模块是一个专业的面部和眼部追踪解决方案，旨在为 VRChat 用户提供高质量的表情追踪体验。该模块作为 PaperTracker 硬件和 VRCFaceTracking 系统之间的桥梁，实现了数据的双向传输和处理。
+PaperTracker VRCFaceTracking 模块是一个专业的面部和眼部追踪解决方案，旨在为 VRChat 用户提供高质量的表情追踪体验。该模块采用统一的追踪架构，作为 PaperTracker 硬件和 VRCFaceTracking 系统之间的桥梁，实现了数据的高效双向传输和处理。
 
 ## ✨ 主要特性
 
 ### 🎯 核心功能
+- **统一追踪架构**：集成眼部和面部追踪于单一模块
 - **双向数据传输**：支持眼部和面部追踪数据的接收与发送
 - **高精度追踪**：提供精确的面部表情和眼部运动捕捉
-- **实时处理**：低延迟的数据处理和传输
-- **智能映射**：支持 V1 和 V2 两种眼部追踪数据格式
+- **实时处理**：低延迟的数据处理和传输（8ms更新周期）
+- **智能映射器**：支持 V1 和 V2 两种眼部追踪数据格式的自动适配
+- **统一配置管理**：支持旧配置自动迁移和统一配置文件
 
 ### 👁️ 眼部追踪
 - **眼球运动追踪**：X/Y 轴精确定位
@@ -61,7 +63,7 @@ PaperTracker VRCFaceTracking 模块是一个专业的面部和眼部追踪解决
 
 ## ⚙️ 配置说明
 
-### 主要配置选项
+### 统一配置文件 (UnifiedTrackerConfig.json)
 
 ```json
 {
@@ -71,7 +73,8 @@ PaperTracker VRCFaceTracking 模块是一个专业的面部和眼部追踪解决
     "ShouldEmulateEyeWiden": true,
     "ShouldEmulateEyeSquint": true,
     "ShouldEmulateEyebrows": true,
-    "OutputMultiplier": 1.1
+    "OutputMultiplier": 1.1,
+    "MapperVersion": "V2"
   },
   "FaceTracking": {
     "FaceHost": "127.0.0.1",
@@ -94,6 +97,9 @@ PaperTracker VRCFaceTracking 模块是一个专业的面部和眼部追踪解决
 | `ShouldEmulateEyeSquint` | 是否模拟眼部眯眼 | `true` |
 | `ShouldEmulateEyebrows` | 是否模拟眉毛动作 | `true` |
 | `OutputMultiplier` | 输出信号倍数 | `1.1` |
+| `MapperVersion` | 眼部追踪映射器版本 (V1/V2) | `V2` |
+| `EnableEyeTracking` | 启用眼部追踪 | `true` |
+| `EnableFaceTracking` | 启用面部追踪 | `true` |
 
 ## 🧪 测试工具
 
@@ -126,15 +132,33 @@ python osc_test.py --mode continuous
 
 ```
 PaperTrackerPlugin/
-├── Configuration/          # 配置管理
+├── Configuration/          # 统一配置管理
+│   ├── UnifiedConfig.cs   # 配置数据结构
+│   └── UnifiedConfigManager.cs # 配置管理器，支持迁移
 ├── Core/                  # 核心功能
 │   ├── Filters/          # 数据过滤器
+│   │   └── OneEuroFilter.cs # 一欧元滤波器
 │   ├── Models/           # 数据模型
+│   │   └── OSCMessage.cs # OSC 消息模型
 │   └── OSC/              # OSC 通信
+│       └── UnifiedOSCManager.cs # 统一 OSC 管理器
 ├── Tracking/              # 追踪功能
 │   ├── Eye/              # 眼部追踪
+│   │   ├── EyeTrackingManager.cs # 眼部追踪管理器
+│   │   ├── Mappers/      # 数据映射器
+│   │   │   ├── BaseEyeMapper.cs # 基础映射器
+│   │   │   ├── V1EyeMapper.cs # V1 格式映射器
+│   │   │   └── V2EyeMapper.cs # V2 格式映射器
+│   │   └── Strategies/   # 追踪策略
 │   └── Face/             # 面部追踪
+│       ├── FaceTrackingManager.cs # 面部追踪管理器
+│       └── PaperFaceTrackerExpressions.cs # 表情定义
 ├── Utils/                 # 工具类
+│   ├── IPAddressNewtonsoftConverter.cs # IP地址转换器
+│   ├── MathUtils.cs      # 数学工具
+│   ├── TwoKeyDictionary.cs # 双键字典
+│   └── Validators.cs     # 验证工具
+├── UnifiedTrackerConfig.cs # 统一追踪模块主类
 └── VRCFaceTracking/       # VRCFT 核心库
 ```
 
@@ -186,23 +210,24 @@ dotnet test
 
 ### 主要类和接口
 
-- `UnifiedTrackerConfig`：统一配置管理
-- `EyeTrackingManager`：眼部追踪管理器
-- `FaceTrackingManager`：面部追踪管理器
-- `UnifiedOSCManager`：OSC 通信管理器
+- `UnifiedTrackingModule`：统一追踪模块主类，继承自 ExtTrackingModule
+- `UnifiedConfigManager`：统一配置管理器，支持配置迁移和验证
+- `EyeTrackingManager`：眼部追踪管理器，支持多种映射器
+- `FaceTrackingManager`：面部追踪管理器，处理面部表情数据
+- `UnifiedOSCManager`：统一 OSC 通信管理器
+- `BaseEyeMapper`、`V1EyeMapper`、`V2EyeMapper`：眼部数据映射器架构
+- `OneEuroFilter`：数据平滑滤波器
 
-### 扩展开发
+## 📈 更新日志
 
-```csharp
-// 自定义眼部映射器示例
-public class CustomEyeMapper : BaseEyeMapper
-{
-    public override void MapEyeData(EyeData input, out VRCFTEyeData output)
-    {
-        // 实现自定义映射逻辑
-    }
-}
-```
+### 最新版本特性
+- ✅ **统一追踪架构**：重构为单一模块，提升稳定性
+- ✅ **智能配置迁移**：自动从旧版配置文件迁移
+- ✅ **多版本映射器支持**：V1/V2 眼部追踪格式兼容
+- ✅ **优化更新循环**：8ms 更新周期，提升响应速度
+- ✅ **改进的 Logo 显示**：嵌入式资源管理
+- ✅ **修复 OSC 发送问题**：提升数据传输稳定性
+- ✅ **修复 JSON 库兼容性**：解决序列化问题
 
 ## 🤝 贡献指南
 
@@ -216,11 +241,13 @@ public class CustomEyeMapper : BaseEyeMapper
 
 本项目采用 MIT 许可证 - 详情请参阅 [LICENSE](LICENSE) 文件。
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ## 📞 支持和反馈
 
 - **GitHub Issues**：[报告问题](https://github.com/DJI-B/VRCFT-PaperTracker/issues)
 - **讨论区**：[GitHub Discussions](https://github.com/DJI-B/VRCFT-PaperTracker/discussions)
-- **邮箱**：support@papertracker.com
+- **邮箱**：kamipaperp@gmail.com
 
 ## 🙏 致谢
 
